@@ -152,19 +152,21 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ warning: 'Fund is used in manual steps.', steps: affectedSteps, fund_abbr }, { status: 409 });
     }
     if (force && affectedSteps.length > 0) {
-      // Delete embedding only if text column contains Fund and metadata->'Metadata'->>'type' = 'manual_guide'
-      await db.query(
-        `DELETE FROM embedding WHERE text ILIKE $1
-          AND metadata->'Metadata'->>'type' = 'manual_guide'`,
-        [`%Fund: ${fund_abbr}%`]
-      );
-      // For each step: if fund_abbr == this fund only, delete step; else remove fund_abbr from list
+      // For each step: ลบ embedding ด้วย chunk_id, แล้วจัดการ manual step ตาม logic เดิม
       for (const step of affectedSteps) {
+        // 1. ลบ Embedding เก่าของ Step นี้ทิ้งทันทีด้วย chunk_id (แม่นยำที่สุด)
+        await db.query(
+          `DELETE FROM embedding WHERE metadata->'Metadata'->>'chunk_id' = $1`,
+          [step.chunk_id]
+        );
+        // 2. คำนวณรายชื่อกองทุนที่เหลือ
         let abbrs = step.fund_abbr ? step.fund_abbr.split(/[ ,]+/).map((s: string) => s.trim()).filter(Boolean) : [];
         abbrs = abbrs.filter((abbr: string) => abbr !== fund_abbr);
         if (abbrs.length === 0) {
+          // ถ้าไม่เหลือกองทุนอื่นแล้ว ลบ Step ออกจาก manual
           await db.query('DELETE FROM manual WHERE chunk_id = $1', [step.chunk_id]);
         } else {
+          // ถ้ายังเหลือกองทุนอื่น ให้อัปเดตและ Re-embed (n8n จะสร้าง embedding ใหม่ให้เอง)
           const newAbbr = abbrs.join(' ').replace(/\s+/g, ' ').trim();
           await db.query('UPDATE manual SET fund_abbr = $1 WHERE chunk_id = $2', [newAbbr, step.chunk_id]);
           // --- Trigger n8n webhook for re-embedding ---
