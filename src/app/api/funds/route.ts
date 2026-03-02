@@ -152,37 +152,28 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ warning: 'Fund is used in manual steps.', steps: affectedSteps, fund_abbr }, { status: 409 });
     }
     if (force && affectedSteps.length > 0) {
+      // Delete embedding only if text column contains Fund and metadata->'Metadata'->>'type' = 'manual_guide'
+      await db.query(
+        `DELETE FROM embedding WHERE text ILIKE $1
+          AND metadata->'Metadata'->>'type' = 'manual_guide'`,
+        [`%Fund: ${fund_abbr}%`]
+      );
       // For each step: if fund_abbr == this fund only, delete step; else remove fund_abbr from list
       for (const step of affectedSteps) {
         let abbrs = step.fund_abbr ? step.fund_abbr.split(/[ ,]+/).map((s: string) => s.trim()).filter(Boolean) : [];
-        // Remove fund_abbr from abbrs
         abbrs = abbrs.filter((abbr: string) => abbr !== fund_abbr);
         if (abbrs.length === 0) {
-          // No funds left, delete step
           await db.query('DELETE FROM manual WHERE chunk_id = $1', [step.chunk_id]);
-          // Delete embeddings for this manual step
-          await db.query(
-            `DELETE FROM embedding WHERE metadata->>'source_table' = $1 AND metadata->>'source_id' = $2`,
-            ['manual', step.chunk_id]
-          );
         } else {
-          // Update fund_abbr with remaining funds
           const newAbbr = abbrs.join(' ').replace(/\s+/g, ' ').trim();
           await db.query('UPDATE manual SET fund_abbr = $1 WHERE chunk_id = $2', [newAbbr, step.chunk_id]);
-          // Delete embeddings for this manual step (to reembed)
-          await db.query(
-            `DELETE FROM embedding WHERE metadata->>'source_table' = $1 AND metadata->>'source_id' = $2`,
-            ['manual', step.chunk_id]
-          );
           // --- Trigger n8n webhook for re-embedding ---
           try {
-            // Get updated manual step
             const manualRes = await db.query('SELECT * FROM manual WHERE chunk_id = $1', [step.chunk_id]);
             if (manualRes.rows.length > 0) {
               const manualData = manualRes.rows[0];
               const webhookUrl = process.env.NEXT_PUBLIC_WEBHOOK_URL;
               if (webhookUrl) {
-                // Use same formatDataForN8n as frontend
                 const payload = {
                   json: {
                     text: `\nหัวข้อ: ${manualData.topic || '-'}\nเนื้อหา: ${manualData.chunk_content || '-'}\nหมวดหมู่หลัก: ${manualData.category_main || '-'}\nหมวดหมู่ย่อย: ${manualData.category_sub || '-'}\nส่วนงาน/ระเบียบ: ${manualData.section || '-'}\nชื่อเอกสาร: ${manualData.document_title || '-'}\nประเภทข้อมูล: ${manualData.data_type || '-'}\nFund: ${manualData.fund_abbr || '-'}\nStep: ${manualData.step_number || '-'}`.trim(),

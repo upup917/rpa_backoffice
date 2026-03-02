@@ -323,6 +323,9 @@ export default function ManualPage() {
               value={form.document_title}
               onChange={handleChange}
               required
+              readOnly={!!selectedTitle && (!editingId || form.document_title === selectedTitle)}
+              disabled={!!selectedTitle && (!editingId || form.document_title === selectedTitle)}
+              style={!!selectedTitle && (!editingId || form.document_title === selectedTitle) ? { background: '#f3f4f6', color: '#888', cursor: 'not-allowed' } : {}}
             />
           </div>
 
@@ -404,7 +407,7 @@ export default function ManualPage() {
               >
                 <option value="">-- เลือก Section --</option>
                 {sectionList.map((section) => (
-                  <option key={section} value={section}>{section}</option>
+                  <option key={section} value={section ?? ""}>{section}</option>
                 ))}
               </select>
               <button
