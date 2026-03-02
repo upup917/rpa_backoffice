@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node server.cjs",
     "build": "next build",
-    "start": "next start",
+    "start": "node server.cjs",
     "lint": "eslint"
   },
   "dependencies": {
