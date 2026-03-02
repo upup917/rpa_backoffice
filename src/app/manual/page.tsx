@@ -137,6 +137,7 @@ export default function ManualPage() {
   const [viewManual, setViewManual] = useState<Manual | null>(null);
   const [manuals, setManuals] = useState<Manual[]>([]);
   const [form, setForm] = useState<Manual>(initialManual);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const dataTypeList = Array.from(new Set(manuals.map((m) => m.data_type).filter(Boolean)));
   const [tempSectionList, setTempSectionList] = useState<string[]>([]);
@@ -231,8 +232,12 @@ export default function ManualPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setShowConfirmModal(true);
+  };
+
+  const confirmSubmitManual = async () => {
     setLoading(true);
     try {
       const method = editingId ? "PUT" : "POST";
@@ -261,6 +266,7 @@ export default function ManualPage() {
       setToast("บันทึกไม่สำเร็จ");
     } finally {
       setLoading(false);
+      setShowConfirmModal(false);
     }
   };
 
@@ -494,6 +500,30 @@ export default function ManualPage() {
               ยกเลิก
             </button>
           </div>
+              {/* Confirm Modal for Add/Edit */}
+              {showConfirmModal && (
+                <div className="mini-modal-overlay">
+                  <div className="mini-modal-box" style={{ textAlign: "center" }}>
+                    <div className="modal-message">คุณต้องการบันทึกข้อมูลนี้ใช่หรือไม่?</div>
+                    <div className="mini-modal-actions" style={{ justifyContent: "center" }}>
+                      <button
+                        className="modal-btn modal-btn-confirm"
+                        onClick={confirmSubmitManual}
+                        disabled={loading}
+                      >
+                        ยืนยัน
+                      </button>
+                      <button
+                        className="modal-btn modal-btn-cancel"
+                        onClick={() => setShowConfirmModal(false)}
+                        disabled={loading}
+                      >
+                        ยกเลิก
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
         </form>
       )}
 
