@@ -6,6 +6,7 @@ export async function GET() {
     const result = await pool.query('SELECT * FROM faq ORDER BY id ASC');
     return NextResponse.json(result.rows);
   } catch (err) {
+    console.error('DB Error:', err);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
