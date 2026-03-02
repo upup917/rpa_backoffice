@@ -8,7 +8,7 @@
    ```bash
    npm start
    ```
-   - ระบบจะติดตั้ง dependencies, build และ start server อัตโนมัติ
-   - แอปจะรันที่ port 3000 (ปรับได้ใน env หรือ next.config.ts)
+   - ระบบจะติดตั้ง dependencies, build และ start server
+   - แอปจะรันที่ port 3000 (ปรับได้ใน env)
 
 
