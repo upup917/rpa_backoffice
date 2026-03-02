@@ -173,6 +173,7 @@ export default function ManualPage() {
   const [selectedTitle, setSelectedTitle] = useState<string>("");
   const [showForm, setShowForm] = useState<boolean>(false);
 
+
   const [fundList, setFundList] = useState<any[]>([]);
   const [categoryMainList, setCategoryMainList] = useState<string[]>([]);
   const [categorySubList, setCategorySubList] = useState<string[]>([]);
@@ -183,6 +184,14 @@ export default function ManualPage() {
 
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // ปิดฟอร์มและ modal เมื่อเปลี่ยนคู่มือ
+  useEffect(() => {
+    setShowForm(false);
+    setEditingId(null);
+    setShowSectionModal(false);
+    setShowCategoryModal(false);
+  }, [selectedTitle]);
 
   useEffect(() => {
     fetchManuals();

@@ -30,7 +30,7 @@ export default function FAQPage() {
   useEffect(() => {
     fetch("/api/faqs")
       .then((res) => res.json())
-      .then((data) => setFaqs(data));
+      .then((data) => Array.isArray(data) ? setFaqs(data) : setFaqs([]));
   }, []);
 
   const handleAddClick = () => {

@@ -80,8 +80,8 @@ export default function FundsPage() {
     try {
       const res = await fetch(`/api/funds?search=${encodeURIComponent(search)}`);
       const data = await res.json();
-      setFunds(data);
-      setFilteredFunds(data);
+      setFunds(Array.isArray(data) ? data : []);
+      setFilteredFunds(Array.isArray(data) ? data : []);
     } catch {
       setToast("เกิดข้อผิดพลาดในการดึงข้อมูลกองทุน");
     }
