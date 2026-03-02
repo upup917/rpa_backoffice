@@ -1,5 +1,19 @@
 "use client";
 
+// Escape HTML output to prevent XSS
+function escapeHtml(text: unknown): string {
+  const str = (text === null || text === undefined) ? '' : String(text);
+  return str.replace(/[&<>"']/g, function (m) {
+    return ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[m] || '';
+  });
+}
+
 import "./style.css";
 import { useEffect, useState } from "react";
 
@@ -443,19 +457,19 @@ export default function ScenarioPage() {
                 <h2>รายละเอียดสถานการณ์</h2>
                 <div className="modal-field">
                   <label>ชื่อสถานการณ์:</label>
-                  <span>{modalScenario.scenario_name}</span>
+                  <span>{escapeHtml(modalScenario.scenario_name)}</span>
                 </div>
                 <div className="modal-field">
                   <label>ป้ายกำกับ:</label>
-                  <span>{modalScenario.tag}</span>
+                  <span>{escapeHtml(modalScenario.tag)}</span>
                 </div>
                 <div className="modal-field">
                   <label>Scenario:</label>
-                  <span>{modalScenario.scenario}</span>
+                  <span>{escapeHtml(modalScenario.scenario)}</span>
                 </div>
                 <div className="modal-field">
                   <label>Solution:</label>
-                  <span>{modalScenario.solution}</span>
+                  <span>{escapeHtml(modalScenario.solution)}</span>
                 </div>
               </div>
               <div className="modal-buttons">
@@ -512,9 +526,9 @@ export default function ScenarioPage() {
               ) : (
                 scenarios.map((s) => (
                   <tr key={s.id}>
-                    <td>{s.scenario_name}</td>
-                    <td>{s.tag}</td>
-                    <td>{s.scenario}</td>
+                    <td>{escapeHtml(s.scenario_name)}</td>
+                    <td>{escapeHtml(s.tag)}</td>
+                    <td>{escapeHtml(s.scenario)}</td>
                     <td>
                       <button
                         className="btn-icon"

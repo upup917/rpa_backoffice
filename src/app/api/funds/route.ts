@@ -24,8 +24,10 @@ export async function GET(request: Request) {
       }
     }
     if (searchValue) {
+      // Sanitize input: remove % and _ to prevent wildcard abuse
+      const sanitizedSearch = String(searchValue).replace(/[%_]/g, '');
       conditions.push(`(fund_abbr ILIKE $${values.length + 1} OR fund_name_th ILIKE $${values.length + 1} OR source_agency ILIKE $${values.length + 1})`);
-      values.push(`%${searchValue}%`);
+      values.push(`%${sanitizedSearch}%`);
     }
     if (statusValue) {
       conditions.push(`status = $${values.length + 1}`);
@@ -45,7 +47,8 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('GET /api/funds error:', error);
     const details = typeof error === 'object' && error !== null && 'message' in error ? (error as any).message : String(error);
-    return NextResponse.json({ error: 'Failed to fetch funds', details }, { status: 500 });
+      // Hide details in production error message
+      return NextResponse.json({ error: 'Failed to fetch funds' }, { status: 500 });
   }
 }
 
@@ -82,7 +85,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('POST /api/funds error:', error);
     const details = typeof error === 'object' && error !== null && 'message' in error ? (error as any).message : String(error);
-    return NextResponse.json({ error: 'Failed to add fund', details }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to add fund' }, { status: 500 });
   }
 }
 
@@ -115,7 +118,7 @@ export async function PUT(request: Request) {
   } catch (error) {
     console.error('PUT /api/funds error:', error);
     const details = typeof error === 'object' && error !== null && 'message' in error ? (error as any).message : String(error);
-    return NextResponse.json({ error: 'Failed to update fund', details }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to update fund' }, { status: 500 });
   }
 }
 
@@ -211,6 +214,6 @@ export async function DELETE(request: Request) {
   } catch (error) {
     console.error('DELETE /api/funds error:', error);
     const details = typeof error === 'object' && error !== null && 'message' in error ? (error as any).message : String(error);
-    return NextResponse.json({ error: 'Failed to delete fund', details }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to delete fund' }, { status: 500 });
   }
 }

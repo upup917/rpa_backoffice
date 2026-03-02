@@ -67,6 +67,11 @@ export default function FAQPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // จำกัดจำนวน FAQ ไม่ให้เกิน 3 ข้อ
+    if (!editingId && faqs.length >= 3) {
+      setToast("ไม่สามารถเพิ่ม FAQ ได้มากกว่า 3 ข้อ");
+      return;
+    }
     setModalType("save");
     setModalData(form);
     setShowModal(true);
@@ -89,6 +94,14 @@ export default function FAQPage() {
         setToast("แก้ไขข้อมูลสำเร็จ");
       }
     } else {
+      // จำกัดจำนวน FAQ ไม่ให้เกิน 3 ข้อ (เผื่อกรณี race condition)
+      if (faqs.length >= 3) {
+        setToast("ไม่สามารถเพิ่ม FAQ ได้มากกว่า 3 ข้อ");
+        setShowModal(false);
+        setModalType(null);
+        setModalData(null);
+        return;
+      }
       res = await fetch("/api/faqs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

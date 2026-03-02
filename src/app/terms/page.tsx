@@ -1,5 +1,19 @@
 "use client";
 
+// Escape HTML output to prevent XSS
+function escapeHtml(text: unknown): string {
+  const str = (text === null || text === undefined) ? '' : String(text);
+  return str.replace(/[&<>"']/g, function (m) {
+    return ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[m] || '';
+  });
+}
+
 import "./style.css";
 import { useEffect, useState } from "react";
 
@@ -324,9 +338,9 @@ export default function TermsPage() {
 						) : (
 							terms.map((term) => (
 								<tr key={term.word_id}>
-									<td>{term.word}</td>
-									<td>{term.meaning}</td>
-									<td>{term.word_type}</td>
+									  <td>{escapeHtml(term.word)}</td>
+									  <td>{escapeHtml(term.meaning)}</td>
+									  <td>{escapeHtml(term.word_type)}</td>
 									<td>
 										<button
 											title="ดูรายละเอียด"

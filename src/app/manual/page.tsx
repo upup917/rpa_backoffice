@@ -1,5 +1,19 @@
 "use client";
 
+// Escape HTML output to prevent XSS
+function escapeHtml(text: unknown): string {
+  const str = (text === null || text === undefined) ? '' : String(text);
+  return str.replace(/[&<>"']/g, function (m) {
+    return ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    })[m] || '';
+  });
+}
+
 import "./style.css";
 
 // Helper to get value or fallback
@@ -47,15 +61,15 @@ function ManualViewModal({
     <div className="mini-modal-overlay">
       <div className="manual-view-modal">
         <h2>รายละเอียดคู่มือ</h2>
-        <div className="manual-view-field"><b>ชื่อเอกสาร:</b><span>{manual.document_title}</span></div>
-        <div className="manual-view-field"><b>หมวดหมู่หลัก:</b><span>{manual.category_main}</span></div>
-        <div className="manual-view-field"><b>หมวดหมู่ย่อย:</b><span>{manual.category_sub}</span></div>
-        <div className="manual-view-field"><b>Section:</b><span>{manual.section}</span></div>
-        <div className="manual-view-field"><b>Step:</b><span>{manual.step_number}</span></div>
-        <div className="manual-view-field"><b>หัวข้อเรื่อง:</b><span>{manual.topic}</span></div>
-        <div className="manual-view-field"><b>เนื้อหา:</b><span>{manual.chunk_content}</span></div>
-        <div className="manual-view-field"><b>ทุน:</b><span>{manual.fund_abbr}</span></div>
-        <div className="manual-view-field"><b>ประเภทข้อมูล:</b><span>{manual.data_type}</span></div>
+        <div className="manual-view-field"><b>ชื่อเอกสาร:</b><span>{escapeHtml(manual.document_title)}</span></div>
+        <div className="manual-view-field"><b>หมวดหมู่หลัก:</b><span>{escapeHtml(manual.category_main)}</span></div>
+        <div className="manual-view-field"><b>หมวดหมู่ย่อย:</b><span>{escapeHtml(manual.category_sub)}</span></div>
+        <div className="manual-view-field"><b>Section:</b><span>{escapeHtml(manual.section)}</span></div>
+        <div className="manual-view-field"><b>Step:</b><span>{escapeHtml(manual.step_number)}</span></div>
+        <div className="manual-view-field"><b>หัวข้อเรื่อง:</b><span>{escapeHtml(manual.topic)}</span></div>
+        <div className="manual-view-field"><b>เนื้อหา:</b><span>{escapeHtml(manual.chunk_content)}</span></div>
+        <div className="manual-view-field"><b>ทุน:</b><span>{escapeHtml(manual.fund_abbr)}</span></div>
+        <div className="manual-view-field"><b>ประเภทข้อมูล:</b><span>{escapeHtml(manual.data_type)}</span></div>
         <div className="mini-modal-actions" style={{ marginTop: 24 }}>
           <button className="modal-btn modal-btn-confirm" onClick={onEdit}>✏️ แก้ไข</button>
           <button className="modal-btn modal-btn-cancel" onClick={onClose}>ปิด</button>
@@ -556,10 +570,10 @@ export default function ManualPage() {
           <tbody>
             {filteredManuals.map((m) => (
               <tr key={m.chunk_id}>
-                <td>{m.step_number}</td>
-                <td style={{ fontWeight: 600 }}>{m.topic}</td>
-                <td className="cell-truncate">{m.chunk_content}</td>
-                <td>{m.fund_abbr}</td>
+                <td>{escapeHtml(m.step_number)}</td>
+                <td style={{ fontWeight: 600 }}>{escapeHtml(m.topic)}</td>
+                <td className="cell-truncate">{escapeHtml(m.chunk_content)}</td>
+                <td>{escapeHtml(m.fund_abbr)}</td>
                 <td className="cell-actions">
                   <button
                     title="ดูรายละเอียด"
