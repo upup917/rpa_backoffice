@@ -1,5 +1,3 @@
-
-
 import { Pool } from 'pg';
 
 // Log environment variables for DB connection (mask password)
