@@ -1,10 +1,4 @@
-// ยืนยันการโหลด dotenv
-try {
-  require('dotenv').config();
-  console.log('[DB] dotenv loaded (process.env):', Object.keys(process.env));
-} catch (err) {
-  console.error('[DB] dotenv load error:', err);
-}
+
 
 import { Pool } from 'pg';
 
