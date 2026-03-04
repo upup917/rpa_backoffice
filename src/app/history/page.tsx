@@ -56,7 +56,13 @@ export default function HistoryPage() {
   useEffect(() => {
     fetch("/api/chat-messages/users/list")
       .then((res) => res.json())
-      .then((data) => setUsers(data.map((item: any) => item.user_id).filter(Boolean)));
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setUsers(data.map((item: any) => item.user_id).filter(Boolean));
+        } else {
+          setUsers([]);
+        }
+      });
   }, []);
 
   useEffect(() => {
@@ -79,11 +85,10 @@ export default function HistoryPage() {
       .then((data) => setFeedbackStats(data));
   }, [selectedUsers]);
 
-  const totalSessionPages = Math.ceil(sessions.length / SESSIONS_PER_PAGE) || 1;
-  const pagedSessions = sessions.slice(
-    (currentSessionPage - 1) * SESSIONS_PER_PAGE,
-    currentSessionPage * SESSIONS_PER_PAGE
-  );
+  const totalSessionPages = Array.isArray(sessions) ? Math.ceil(sessions.length / SESSIONS_PER_PAGE) || 1 : 1;
+  const pagedSessions = Array.isArray(sessions)
+    ? sessions.slice((currentSessionPage - 1) * SESSIONS_PER_PAGE, currentSessionPage * SESSIONS_PER_PAGE)
+    : [];
 
   function handleUserSelect(userId: string) {
     setSelectedUsers((prev) =>
@@ -125,7 +130,7 @@ export default function HistoryPage() {
     [users, userSearch]
   );
 
-  const totalMsgPages = Math.ceil(messages.length / MESSAGES_PER_PAGE) || 1;
+  const totalMsgPages = Array.isArray(messages) ? Math.ceil(messages.length / MESSAGES_PER_PAGE) || 1 : 1;
 
   return (
     <div className="history-layout">

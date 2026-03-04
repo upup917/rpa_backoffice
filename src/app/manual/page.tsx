@@ -206,13 +206,19 @@ export default function ManualPage() {
     try {
       const res = await fetch("/api/manuals");
       const data = await res.json();
-      setManuals(data);
-      setCategoryMainList(
-        Array.from(new Set(data.map((m: any) => m.category_main))).filter(Boolean) as string[]
-      );
-      setCategorySubList(
-        Array.from(new Set(data.map((m: any) => m.category_sub))).filter(Boolean) as string[]
-      );
+      if (Array.isArray(data)) {
+        setManuals(data);
+        setCategoryMainList(
+          Array.from(new Set(data.map((m: any) => m.category_main))).filter(Boolean) as string[]
+        );
+        setCategorySubList(
+          Array.from(new Set(data.map((m: any) => m.category_sub))).filter(Boolean) as string[]
+        );
+      } else {
+        setManuals([]);
+        setCategoryMainList([]);
+        setCategorySubList([]);
+      }
     } catch {
       setToast("ไม่สามารถโหลดข้อมูลได้");
     } finally {
