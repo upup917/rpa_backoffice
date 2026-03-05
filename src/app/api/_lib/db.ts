@@ -12,6 +12,7 @@ console.log('[DB] ENV CONFIG:', {
 });
 
 let pool: Pool;
+
 try {
   pool = new Pool({
     user: process.env.DB_USER,
@@ -21,6 +22,19 @@ try {
     port: process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined,
   });
   console.log('[DB] สร้าง Pool สำเร็จ');
+
+  // Log จำนวนตารางทั้งหมดในฐานข้อมูลหลังสร้าง pool
+  (async () => {
+    try {
+      const res = await pool.query(`
+        SELECT COUNT(*) FROM information_schema.tables
+        WHERE table_schema = 'schema_beta'
+      `);
+      console.log(`[DB] มีทั้งหมด ${res.rows[0].count} ตารางใน schema_beta`);
+    } catch (err) {
+      console.error('[DB] ตรวจสอบจำนวนตารางล้มเหลว:', err);
+    }
+  })();
 } catch (err) {
   console.error('[DB] สร้าง Pool ไม่สำเร็จ:', err);
   throw err;
