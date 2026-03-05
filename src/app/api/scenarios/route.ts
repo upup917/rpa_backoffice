@@ -25,6 +25,7 @@ export async function GET(request: Request) {
     }
     sql += ' ORDER BY id';
     const result = await db.query(sql, values);
+    console.log("DB Result:", result.rows.length, "rows found");
     return NextResponse.json(result.rows);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch scenarios' }, { status: 500 });

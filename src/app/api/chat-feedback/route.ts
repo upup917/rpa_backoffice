@@ -20,6 +20,7 @@ export async function GET(req: Request) {
   }
   try {
     const result = await pool.query(query, params);
+    console.log('[Chat Feedback API] ดึงข้อมูลจาก 1 ตาราง (chat_messages)');
     return NextResponse.json(result.rows[0] || { like_count: 0, dislike_count: 0, neutral_count: 0 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

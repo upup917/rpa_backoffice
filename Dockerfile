@@ -9,6 +9,9 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# --- เพิ่มบรรทัดนี้ ---
+# มั่นใจว่ามี .env สำหรับการดึงข้อมูลตอน Build (ถ้ามีการทำ Static Site Generation)
+COPY .env .env 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
@@ -22,18 +25,19 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-
-
+# ปรับการ Copy ให้ครอบคลุมไฟล์ที่จำเป็นสำหรับ Server-side
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/server.cjs ./server.cjs
 COPY --from=builder /app/next.config.ts ./next.config.ts
+# Copy .env มาไว้ที่นี่ด้วยเพื่อให้ server.cjs อ่านค่าได้ตอน Run
 COPY .env .env
 
 USER nextjs
 
 EXPOSE 3000
 
+# ปรับ CMD เพื่อให้มั่นใจว่า Environment ถูกโหลดก่อนเริ่มงาน
 CMD ["npm", "start"]

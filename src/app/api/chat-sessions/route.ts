@@ -42,6 +42,7 @@ export async function GET(req: Request) {
 
   try {
     const result = await pool.query(query, params);
+    console.log('[Chat Sessions API] ดึงข้อมูลจาก 2 ตาราง (chat_sessions, chat_messages)');
     return NextResponse.json(result.rows);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

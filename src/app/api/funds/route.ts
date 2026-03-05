@@ -43,6 +43,7 @@ export async function GET(request: Request) {
     sql += ' ORDER BY fund_id';
 
     const funds = await db.query(sql, values);
+    console.log("DB Result:", funds.rows.length, "rows found");
     return NextResponse.json(funds.rows);
   } catch (error) {
     console.error('GET /api/funds error:', error);

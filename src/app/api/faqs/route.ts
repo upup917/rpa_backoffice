@@ -4,6 +4,8 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     const result = await pool.query('SELECT * FROM faq ORDER BY id ASC');
+    console.log('[FAQ API] ดึงข้อมูลจาก 1 ตาราง (faq)');
+    console.log("DB Result:", result.rows.length, "rows found");
     return NextResponse.json(result.rows);
   } catch (err) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
@@ -17,6 +19,7 @@ export async function POST(request: Request) {
       'INSERT INTO faq (question, answer) VALUES ($1, $2) RETURNING *',
       [data.question, data.answer]
     );
+    console.log('[FAQ API] ดึงข้อมูลจาก 1 ตาราง (faq)');
     return NextResponse.json(result.rows[0]);
   } catch (err) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

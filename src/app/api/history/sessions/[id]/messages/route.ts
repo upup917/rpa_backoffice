@@ -6,6 +6,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   const query = 'SELECT * FROM chat_messages WHERE session_id = $1 ORDER BY created_at ASC';
   try {
     const result = await pool.query(query, [id]);
+    console.log('[History Session Messages API] ดึงข้อมูลจาก 1 ตาราง (chat_messages)');
     return NextResponse.json(result.rows);
   } catch (err) {
     // Use Next.js best practice for error serialization

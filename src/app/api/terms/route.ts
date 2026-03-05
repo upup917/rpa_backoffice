@@ -13,8 +13,10 @@ export async function GET(request: Request) {
         "SELECT * FROM term WHERE word ILIKE $1 ORDER BY word_id asc",
         [`%${search}%`]
       );
+      console.log("DB Result:", terms.rows.length, "rows found");
     } else {
       terms = await db.query("SELECT * FROM term ORDER BY word_id asc");
+      console.log("DB Result:", terms.rows.length, "rows found");
     }
     // ดึง word_type ไม่ซ้ำทั้งหมด
     const typeResult = await db.query("SELECT DISTINCT word_type FROM term WHERE word_type IS NOT NULL AND word_type <> '' ORDER BY word_type ASC");

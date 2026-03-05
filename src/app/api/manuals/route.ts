@@ -25,6 +25,7 @@ export async function GET(request: Request) {
     }
     sql += ' ORDER BY chunk_id ASC';
     const result = await db.query(sql, values);
+    console.log("DB Result:", result.rows.length, "rows found");
     return NextResponse.json(result.rows);
   } catch (err) {
     console.error("GET /api/manuals error:", err);

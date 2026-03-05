@@ -7,6 +7,7 @@ export async function GET() {
     const result = await pool.query(
       "SELECT DISTINCT user_id FROM chat_sessions WHERE summary_content IS NOT NULL AND BTRIM(summary_content) <> '' ORDER BY user_id"
     );
+    console.log('[Chat Messages Users List API] ดึงข้อมูลจาก 1 ตาราง (chat_sessions)');
     return NextResponse.json(result.rows);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
