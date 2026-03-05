@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const tag = searchParams.get('tag') || '';
-    let sql = 'SELECT * FROM scenario';
+    let sql = 'SELECT * FROM schema_beta.scenario';
     const conditions = [];
     const values = [];
     let paramIdx = 1;
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const { scenario_name, tag, scenario, solution } = data;
     const result = await db.query(
-      'INSERT INTO scenario (scenario_name, tag, scenario, solution) VALUES ($1, $2, $3, $4) RETURNING id',
+      'INSERT INTO schema_beta.scenario (scenario_name, tag, scenario, solution) VALUES ($1, $2, $3, $4) RETURNING id',
       [scenario_name, tag, scenario, solution]
     );
     const id = result.rows[0]?.id;
@@ -53,11 +53,11 @@ export async function PUT(request: Request) {
     const { id, scenario_name, tag, scenario, solution } = data;
     // Delete embeddings for this scenario before update (use metadata->'Metadata'->>'parent_id')
     await db.query(
-      `DELETE FROM embedding WHERE metadata->'Metadata'->>'parent_id' = $1`,
+      `DELETE FROM schema_beta.embedding WHERE metadata->'Metadata'->>'parent_id' = $1`,
       [String(id)]
     );
     await db.query(
-      'UPDATE scenario SET scenario_name=$1, tag=$2, scenario=$3, solution=$4 WHERE id=$5',
+      'UPDATE schema_beta.scenario SET scenario_name=$1, tag=$2, scenario=$3, solution=$4 WHERE id=$5',
       [scenario_name, tag, scenario, solution, id]
     );
     return NextResponse.json({ success: true });
@@ -72,10 +72,10 @@ export async function DELETE(request: Request) {
     const { id } = data;
     // Delete embeddings for this scenario (use metadata->'Metadata'->>'parent_id')
     await db.query(
-      `DELETE FROM embedding WHERE metadata->'Metadata'->>'parent_id' = $1`,
+      `DELETE FROM schema_beta.embedding WHERE metadata->'Metadata'->>'parent_id' = $1`,
       [String(id)]
     );
-    await db.query('DELETE FROM scenario WHERE id=$1', [id]);
+    await db.query('DELETE FROM schema_beta.scenario WHERE id=$1', [id]);
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete scenario' }, { status: 500 });

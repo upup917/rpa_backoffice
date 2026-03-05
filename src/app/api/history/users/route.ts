@@ -5,7 +5,7 @@ import pool from '../../_lib/db';
 export async function GET() {
   try {
     const result = await pool.query(
-      "SELECT DISTINCT user_id FROM chat_sessions WHERE summary_content IS NOT NULL AND BTRIM(summary_content) <> '' ORDER BY user_id"
+      "SELECT DISTINCT user_id FROM schema_beta.chat_sessions WHERE summary_content IS NOT NULL AND BTRIM(summary_content) <> '' ORDER BY user_id"
     );
     console.log('[History Users API] ดึงข้อมูลจาก 1 ตาราง (chat_sessions)');
     return NextResponse.json(result.rows);

@@ -10,7 +10,7 @@ export async function GET(req: Request) {
       COUNT(CASE WHEN feedback = 'like' THEN 1 END) as like_count,
       COUNT(CASE WHEN feedback = 'dislike' THEN 1 END) as dislike_count,
       COUNT(CASE WHEN feedback IS NULL THEN 1 END) as neutral_count
-    FROM chat_messages
+    FROM schema_beta.chat_messages
   `;
   let params: any[] = [];
   if (user_id) {

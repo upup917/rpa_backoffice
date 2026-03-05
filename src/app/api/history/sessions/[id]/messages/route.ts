@@ -3,7 +3,7 @@ import pool from '../../../../_lib/db';
 // GET /api/history/sessions/[id]/messages
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const query = 'SELECT * FROM chat_messages WHERE session_id = $1 ORDER BY created_at ASC';
+  const query = 'SELECT * FROM schema_beta.chat_messages WHERE session_id = $1 ORDER BY created_at ASC';
   try {
     const result = await pool.query(query, [id]);
     console.log('[History Session Messages API] ดึงข้อมูลจาก 1 ตาราง (chat_messages)');
