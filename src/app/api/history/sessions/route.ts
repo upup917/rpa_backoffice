@@ -7,6 +7,7 @@ export async function GET(req: Request) {
   const user_id = searchParams.get('user_id');
   const feedback = searchParams.get('feedback');
 
+  const schema = process.env.DB_SCHEMA || 'schema_beta';
   let query = `
     SELECT
       s.id,
@@ -17,8 +18,8 @@ export async function GET(req: Request) {
       COUNT(CASE WHEN m.feedback = 'like' THEN 1 END) as like_count,
       COUNT(CASE WHEN m.feedback = 'dislike' THEN 1 END) as dislike_count,
       COUNT(CASE WHEN m.feedback IS NULL THEN 1 END) as neutral_count
-    FROM schema_beta.chat_sessions s
-    LEFT JOIN schema_beta.chat_messages m ON m.session_id = s.id
+    FROM ${schema}.chat_sessions s
+    LEFT JOIN ${schema}.chat_messages m ON m.session_id = s.id
     WHERE s.summary_content IS NOT NULL AND BTRIM(s.summary_content) <> ''
   `;
   const params: any[] = [];

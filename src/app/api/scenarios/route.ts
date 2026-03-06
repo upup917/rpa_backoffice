@@ -6,7 +6,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
     const tag = searchParams.get('tag') || '';
-    let sql = 'SELECT * FROM schema_beta.scenario';
+    const schema = process.env.DB_SCHEMA || 'schema_beta';
+    let sql = `SELECT * FROM ${schema}.scenario`;
     const conditions = [];
     const values = [];
     let paramIdx = 1;

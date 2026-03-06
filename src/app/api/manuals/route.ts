@@ -8,7 +8,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
     const document_title = searchParams.get("document_title") || "";
-    let sql = 'SELECT * FROM schema_beta.manual';
+    const schema = process.env.DB_SCHEMA || 'schema_beta';
+    let sql = `SELECT * FROM ${schema}.manual`;
     const conditions = [];
     const values = [];
     if (search) {

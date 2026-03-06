@@ -5,12 +5,13 @@ import pool from '../../_lib/db';
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const user_id = searchParams.get('user_id');
+  const schema = process.env.DB_SCHEMA || 'schema_beta';
   let query = `
     SELECT 
       COUNT(CASE WHEN feedback = 'like' THEN 1 END) as like_count,
       COUNT(CASE WHEN feedback = 'dislike' THEN 1 END) as dislike_count,
       COUNT(CASE WHEN feedback IS NULL THEN 1 END) as neutral_count
-    FROM schema_beta.chat_messages
+    FROM ${schema}.chat_messages
   `;
   let params: any[] = [];
   if (user_id) {
