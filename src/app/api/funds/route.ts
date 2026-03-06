@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 // @ts-ignore
 import db from '../../api/_lib/db';

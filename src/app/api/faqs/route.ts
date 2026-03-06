@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import pool from '../../api/_lib/db';
 import { NextResponse } from 'next/server';
 
