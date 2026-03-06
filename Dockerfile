@@ -32,6 +32,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/server.cjs ./server.cjs
 COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder /app/src ./src
 # Copy .env มาไว้ที่นี่ด้วยเพื่อให้ server.cjs อ่านค่าได้ตอน Run
 COPY .env .env
 
