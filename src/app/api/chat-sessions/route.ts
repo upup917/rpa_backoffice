@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import pool from '../_lib/db';
 
+export const dynamic = 'force-dynamic';
+console.log('[Chat Sessions API] route called');
 // GET /api/chat-sessions?user_id=&feedback=
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

@@ -21,6 +21,7 @@ try {
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined,
+    options: `-c search_path=${process.env.DB_SCHEMA || 'schema_beta'}`
   });
   console.log('[DB] สร้าง Pool สำเร็จ');
 

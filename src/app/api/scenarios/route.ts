@@ -1,4 +1,6 @@
 export const dynamic = 'force-dynamic';
+
+console.log('[Scenarios API] route called');
 import { NextResponse } from 'next/server';
 import db from '../../api/_lib/db';
 

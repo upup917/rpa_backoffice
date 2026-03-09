@@ -1,4 +1,6 @@
 export const dynamic = 'force-dynamic';
+
+console.log('[History Users API] route called');
 import { NextResponse } from 'next/server';
 import pool from '../../_lib/db';
 

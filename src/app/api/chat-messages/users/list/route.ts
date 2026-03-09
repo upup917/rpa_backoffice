@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+console.log('[Chat Messages Users List API] route called');
 import { NextResponse } from 'next/server';
 import pool from '../../../_lib/db';
 

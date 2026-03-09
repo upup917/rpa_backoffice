@@ -1,4 +1,6 @@
 export const dynamic = 'force-dynamic';
+
+console.log('[Funds API] route called');
 import { NextResponse } from 'next/server';
 // @ts-ignore
 import db from '../../api/_lib/db';

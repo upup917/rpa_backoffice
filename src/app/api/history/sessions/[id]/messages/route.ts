@@ -1,4 +1,6 @@
 export const dynamic = 'force-dynamic';
+
+console.log('[History Session Messages API] route called');
 import { NextResponse, NextRequest } from 'next/server';
 import pool from '../../../../_lib/db';
 // GET /api/history/sessions/[id]/messages
