@@ -11,8 +11,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search") || "";
     const document_title = searchParams.get("document_title") || "";
-    const schema = process.env.DB_SCHEMA || 'schema_beta';
-    let sql = `SELECT * FROM ${schema}.manual`;
+    let sql = `SELECT * FROM manual`;
     const conditions = [];
     const values = [];
     if (search) {
@@ -49,7 +48,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
       const result = await db.query(
-        'INSERT INTO schema_beta.manual (document_title, category_main, category_sub, step_number, topic, chunk_content, fund_abbr, section, data_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
+        'INSERT INTO manual (document_title, category_main, category_sub, step_number, topic, chunk_content, fund_abbr, section, data_type) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *',
         [document_title, category_main, category_sub, step_number, topic, chunk_content, fund_abbr, section, data_type]
       );
     return NextResponse.json(result.rows[0]);
@@ -67,11 +66,11 @@ export async function PUT(request: Request) {
     }
     // Delete embeddings for this manual step before update (use metadata->'Metadata'->>'chunk_id')
     await db.query(
-      `DELETE FROM schema_beta.embedding WHERE metadata->'Metadata'->>'chunk_id' = $1`,
+      `DELETE FROM embedding WHERE metadata->'Metadata'->>'chunk_id' = $1`,
       [chunk_id]
     );
       const result = await db.query(
-        'UPDATE schema_beta.manual SET document_title = $1, category_main = $2, category_sub = $3, step_number = $4, topic = $5, chunk_content = $6, fund_abbr = $7, section = $8, data_type = $9 WHERE chunk_id = $10 RETURNING *',
+        'UPDATE manual SET document_title = $1, category_main = $2, category_sub = $3, step_number = $4, topic = $5, chunk_content = $6, fund_abbr = $7, section = $8, data_type = $9 WHERE chunk_id = $10 RETURNING *',
         [document_title, category_main, category_sub, step_number, topic, chunk_content, fund_abbr, section, data_type, chunk_id]
       );
     if (result.rows.length === 0) {
@@ -89,10 +88,10 @@ export async function DELETE(request: Request) {
     const { chunk_id } = await request.json();
     // Delete embeddings for this manual step (use metadata->'Metadata'->>'chunk_id')
     await db.query(
-      `DELETE FROM schema_beta.embedding WHERE metadata->'Metadata'->>'chunk_id' = $1`,
+      `DELETE FROM embedding WHERE metadata->'Metadata'->>'chunk_id' = $1`,
       [chunk_id]
     );
-    await db.query('DELETE FROM schema_beta.manual WHERE chunk_id = $1', [chunk_id]);
+    await db.query('DELETE FROM manual WHERE chunk_id = $1', [chunk_id]);
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("DELETE /api/manuals error:", err);

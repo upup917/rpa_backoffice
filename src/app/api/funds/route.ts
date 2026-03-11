@@ -11,8 +11,7 @@ export async function GET(request: Request) {
     const search = searchParams.get('search') || '';
     const filter = searchParams.get('filter') || 'all';
 
-    const schema = process.env.DB_SCHEMA || 'schema_beta';
-    let sql = `SELECT * FROM ${schema}.funds`;
+    let sql = `SELECT * FROM funds`;
     const conditions: string[] = [];
     const values: any[] = [];
 
@@ -65,8 +64,7 @@ export async function POST(request: Request) {
     const startPeriod = start_period === '' ? null : start_period;
     const endPeriod = end_period === '' ? null : end_period;
     // Generate new fund_id in format F-xxx
-    const schema = process.env.DB_SCHEMA || 'schema_beta';
-    const result = await db.query(`SELECT fund_id FROM ${schema}.funds ORDER BY fund_id DESC LIMIT 1`);
+    const result = await db.query(`SELECT fund_id FROM funds ORDER BY fund_id DESC LIMIT 1`);
     let nextId = 1;
     if (result.rows.length > 0) {
       const lastId = result.rows[0].fund_id;
@@ -78,7 +76,7 @@ export async function POST(request: Request) {
     const fund_id = `F-${nextId.toString().padStart(3, '0')}`;
     try {
       await db.query(
-        `INSERT INTO ${schema}.funds (fund_id, fund_abbr, fund_name_th, fund_name_en, fiscal_year, source_agency, start_period, end_period, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO funds (fund_id, fund_abbr, fund_name_th, fund_name_en, fiscal_year, source_agency, start_period, end_period, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [fund_id, fund_abbr, fund_name_th, fund_name_en, fiscal_year, source_agency, startPeriod, endPeriod, status]
       );
       return NextResponse.json({ success: true, fund_id });
@@ -103,21 +101,20 @@ export async function PUT(request: Request) {
     const startPeriod = start_period === '' ? null : start_period;
     const endPeriod = end_period === '' ? null : end_period;
     // Delete embeddings for this fund before update (use metadata->'Metadata'->>'source_id')
-    const schema = process.env.DB_SCHEMA || 'schema_beta';
     await db.query(
-      `DELETE FROM ${schema}.embedding WHERE metadata->'Metadata'->>'source_id' = $1`,
+      `DELETE FROM embedding WHERE metadata->'Metadata'->>'source_id' = $1`,
       [fund_id]
     );
     // Update fund
     await db.query(
-      `UPDATE ${schema}.funds SET fund_abbr=$2, fund_name_th=$3, fund_name_en=$4, fiscal_year=$5, source_agency=$6, start_period=$7, end_period=$8, status=$9 WHERE fund_id=$1`,
+      `UPDATE funds SET fund_abbr=$2, fund_name_th=$3, fund_name_en=$4, fiscal_year=$5, source_agency=$6, start_period=$7, end_period=$8, status=$9 WHERE fund_id=$1`,
       [fund_id, fund_abbr, fund_name_th, fund_name_en, fiscal_year, source_agency, startPeriod, endPeriod, status]
     );
     // Delete embeddings for related manual steps (if any)
-    const manualResult = await db.query(`SELECT chunk_id FROM ${schema}.manual WHERE fund_abbr LIKE $1`, [`%${fund_abbr}%`]);
+    const manualResult = await db.query(`SELECT chunk_id FROM manual WHERE fund_abbr LIKE $1`, [`%${fund_abbr}%`]);
     for (const row of manualResult.rows) {
       await db.query(
-        `DELETE FROM ${schema}.embedding WHERE metadata->>'source_table' = $1 AND metadata->>'source_id' = $2`,
+        `DELETE FROM embedding WHERE metadata->>'source_table' = $1 AND metadata->>'source_id' = $2`,
         ['manual', row.chunk_id]
       );
     }
@@ -142,15 +139,14 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Missing or invalid fund_id.' }, { status: 400 });
     }
     // Find fund_abbr for this fund_id
-    const schema = process.env.DB_SCHEMA || 'schema_beta';
-    const fundResult = await db.query(`SELECT fund_abbr FROM ${schema}.funds WHERE fund_id=$1`, [fund_id]);
+    const fundResult = await db.query(`SELECT fund_abbr FROM funds WHERE fund_id=$1`, [fund_id]);
     if (fundResult.rows.length === 0) {
       return NextResponse.json({ error: 'Fund not found.' }, { status: 404 });
     }
     const fund_abbr = fundResult.rows[0].fund_abbr;
     // Query all manual steps that might contain this fund_abbr (loose match)
     const manualResult = await db.query(
-      `SELECT chunk_id, document_title, step_number, topic, fund_abbr FROM ${schema}.manual WHERE fund_abbr LIKE $1`,
+      `SELECT chunk_id, document_title, step_number, topic, fund_abbr FROM manual WHERE fund_abbr LIKE $1`,
       [`%${fund_abbr}%`]
     );
     // Filter only steps that actually contain this fund_abbr (split by space/comma)
@@ -167,7 +163,7 @@ export async function DELETE(request: Request) {
       for (const step of affectedSteps) {
         // 1. ลบ Embedding เก่าของ Step นี้ทิ้งทันทีด้วย chunk_id (แม่นยำที่สุด)
         await db.query(
-          `DELETE FROM ${schema}.embedding WHERE metadata->'Metadata'->>'chunk_id' = $1`,
+          `DELETE FROM embedding WHERE metadata->'Metadata'->>'chunk_id' = $1`,
           [step.chunk_id]
         );
         // 2. คำนวณรายชื่อกองทุนที่เหลือ
@@ -175,14 +171,14 @@ export async function DELETE(request: Request) {
         abbrs = abbrs.filter((abbr: string) => abbr !== fund_abbr);
         if (abbrs.length === 0) {
           // ถ้าไม่เหลือกองทุนอื่นแล้ว ลบ Step ออกจาก manual
-          await db.query(`DELETE FROM ${schema}.manual WHERE chunk_id = $1`, [step.chunk_id]);
+          await db.query(`DELETE FROM manual WHERE chunk_id = $1`, [step.chunk_id]);
         } else {
           // ถ้ายังเหลือกองทุนอื่น ให้อัปเดตและ Re-embed (n8n จะสร้าง embedding ใหม่ให้เอง)
           const newAbbr = abbrs.join(' ').replace(/\s+/g, ' ').trim();
-          await db.query(`UPDATE ${schema}.manual SET fund_abbr = $1 WHERE chunk_id = $2`, [newAbbr, step.chunk_id]);
+          await db.query(`UPDATE manual SET fund_abbr = $1 WHERE chunk_id = $2`, [newAbbr, step.chunk_id]);
           // --- Trigger n8n webhook for re-embedding ---
           try {
-            const manualRes = await db.query(`SELECT * FROM ${schema}.manual WHERE chunk_id = $1`, [step.chunk_id]);
+            const manualRes = await db.query(`SELECT * FROM manual WHERE chunk_id = $1`, [step.chunk_id]);
             if (manualRes.rows.length > 0) {
               const manualData = manualRes.rows[0];
               const webhookUrl = process.env.NEXT_PUBLIC_WEBHOOK_URL;
@@ -213,11 +209,11 @@ export async function DELETE(request: Request) {
     }
     // Delete embeddings for this fund (use metadata->'Metadata'->>'source_id')
     await db.query(
-      `DELETE FROM ${schema}.embedding WHERE metadata->'Metadata'->>'source_id' = $1`,
+      `DELETE FROM embedding WHERE metadata->'Metadata'->>'source_id' = $1`,
       [fund_id]
     );
     // Delete fund
-    await db.query(`DELETE FROM ${schema}.funds WHERE fund_id=$1`, [fund_id]);
+    await db.query(`DELETE FROM funds WHERE fund_id=$1`, [fund_id]);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('DELETE /api/funds error:', error);
