@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 console.log('[Scenarios API] route called');
 import { NextResponse } from 'next/server';
@@ -31,6 +32,7 @@ export async function GET(request: Request) {
     console.log("DB Result:", result.rows.length, "rows found");
     return NextResponse.json(result.rows);
   } catch (error) {
+    console.error('[Scenarios API] GET error:', error);
     return NextResponse.json({ error: 'Failed to fetch scenarios' }, { status: 500 });
   }
 }
@@ -46,6 +48,7 @@ export async function POST(request: Request) {
     const id = result.rows[0]?.id;
     return NextResponse.json({ success: true, id });
   } catch (error) {
+    console.error('[Scenarios API] POST error:', error);
     return NextResponse.json({ error: 'Failed to add scenario' }, { status: 500 });
   }
 }
@@ -65,6 +68,7 @@ export async function PUT(request: Request) {
     );
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('[Scenarios API] PUT error:', error);
     return NextResponse.json({ error: 'Failed to update scenario' }, { status: 500 });
   }
 }
@@ -81,6 +85,7 @@ export async function DELETE(request: Request) {
     await db.query('DELETE FROM scenario WHERE id=$1', [id]);
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('[Scenarios API] DELETE error:', error);
     return NextResponse.json({ error: 'Failed to delete scenario' }, { status: 500 });
   }
 }

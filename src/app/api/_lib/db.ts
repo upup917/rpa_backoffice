@@ -1,79 +1,92 @@
 import { Pool } from 'pg';
 
-// Log environment variables for DB connection (mask password)
+type DbConfig = {
+  user: string;
+  host: string;
+  database: string;
+  password: string;
+  port?: number;
+  schema: string;
+};
 
-console.log('[DB] ENV CONFIG:', {
-  DB_USER: process.env.DB_USER,
-  DB_HOST: process.env.DB_HOST,
-  DB_NAME: process.env.DB_NAME,
-  DB_PORT: process.env.DB_PORT,
-  DB_PASSWORD: process.env.DB_PASSWORD ? '***' : undefined,
-  DB_SCHEMA: process.env.DB_SCHEMA || 'schema_beta',
-  ENV_KEYS: Object.keys(process.env),
-});
+function readDbConfig(): DbConfig {
+  const missing: string[] = [];
 
-let pool: Pool;
+  const user = process.env.DB_USER || '';
+  const host = process.env.DB_HOST || '';
+  const database = process.env.DB_NAME || '';
+  const password = process.env.DB_PASSWORD || '';
+  const schema = process.env.DB_SCHEMA || 'schema_beta';
+  const port = process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined;
 
-try {
-  pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT ? Number(process.env.DB_PORT) : undefined,
-    options: `-c search_path=${process.env.DB_SCHEMA || 'schema_beta'}`
-  });
-  console.log('[DB] สร้าง Pool สำเร็จ');
+  if (!user) missing.push('DB_USER');
+  if (!host) missing.push('DB_HOST');
+  if (!database) missing.push('DB_NAME');
+  if (!password) missing.push('DB_PASSWORD');
 
-    // Log จำนวนตารางทั้งหมดใน schema ที่กำหนดใน env
-    (async () => {
-      const schema = process.env.DB_SCHEMA || 'schema_beta';
-      try {
-        const res = await pool.query(
-          `SELECT COUNT(*) AS table_count FROM information_schema.tables WHERE table_schema = $1`,
-          [schema]
-        );
-        console.log(`[DB] Schema '${schema}' has`, res.rows[0].table_count, 'tables');
-      } catch (err) {
-        console.error('[DB] Error counting tables in schema:', schema, err);
-      }
-    })();
-} catch (err) {
-  console.error('[DB] สร้าง Pool ไม่สำเร็จ:', err);
-    console.log('[DB] Pool สร้างสำเร็จ:', {
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_NAME,
-      schema: process.env.DB_SCHEMA
-    });
-    // เพิ่ม log ทุกครั้งที่สร้าง pool
-    console.log('[DB] กำลังสร้าง Pool...');
-  throw err;
+  if (missing.length) {
+    throw new Error(
+      `[DB] Missing required env: ${missing.join(
+        ', '
+      )}. Ensure the deploy runtime has these variables set (or a .env file is loaded).`
+    );
+  }
+
+  return { user, host, database, password, port, schema };
 }
 
-pool.on('connect', () => {
-  console.log('✅ เชื่อมต่อกับฐานข้อมูล PostgreSQL สำเร็จ!');
-});
+let poolSingleton: Pool | null = null;
+let initLogged = false;
 
-pool.on('error', (err: Error) => {
-  console.error('❌ เกิดข้อผิดพลาดกับฐานข้อมูล:', err);
-  // เพิ่มรายละเอียด error
-  if (err instanceof Error) {
-    console.error('[DB] Error name:', err.name);
-    console.error('[DB] Error message:', err.message);
-    console.error('[DB] Error stack:', err.stack);
+function getPool(): Pool {
+  if (poolSingleton) return poolSingleton;
+
+  const cfg = readDbConfig();
+  if (!initLogged) {
+    initLogged = true;
+    console.log('[DB] Initializing Pool with:', {
+      user: cfg.user,
+      host: cfg.host,
+      database: cfg.database,
+      port: cfg.port,
+      schema: cfg.schema,
+      password: cfg.password ? '***' : undefined,
+    });
   }
-  process.exit(-1);
+
+  const pool = new Pool({
+    user: cfg.user,
+    host: cfg.host,
+    database: cfg.database,
+    password: cfg.password,
+    port: cfg.port,
+    options: `-c search_path=${cfg.schema}`,
+  });
+
+  pool.on('connect', () => {
+    console.log('[DB] Connected to PostgreSQL.');
+  });
+
+  pool.on('error', (err: Error) => {
+    // Don't kill the whole Next.js process on transient DB errors.
+    console.error('[DB] Pool error:', err);
+  });
+
+  poolSingleton = pool;
+  return poolSingleton;
+}
+
+// Keep default export compatible with existing code: `import db from ...; await db.query(...)`
+const pool = new Proxy({} as Pool, {
+  get(_target, prop) {
+    return (getPool() as any)[prop];
+  },
 });
 
-
-// ฟังก์ชัน query พร้อม log
-export async function queryWithLog(...args: any[]) {
-  console.log('[DB] QUERY:', args[0], args[1]);
+export async function queryWithLog(text: string, params?: any[]) {
+  console.log('[DB] QUERY:', text, params);
   try {
-    // @ts-ignore: TypeScript overload issue
-    const result = await pool.query(...args);
-    return result;
+    return await getPool().query(text as any, params as any);
   } catch (err) {
     console.error('[DB] QUERY ERROR:', err);
     throw err;
@@ -81,3 +94,4 @@ export async function queryWithLog(...args: any[]) {
 }
 
 export default pool;
+

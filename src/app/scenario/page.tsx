@@ -16,6 +16,7 @@ function escapeHtml(text: unknown): string {
 
 import "./style.css";
 import { useEffect, useState } from "react";
+import { apiUrl } from "../_lib/basePath";
 
 // Helper to get value or fallback
 function getValue(val: any, fallback: string = "-") {
@@ -85,6 +86,7 @@ export default function ScenarioPage() {
   }>({ type: null });
 
   useEffect(() => {
+    console.log("[useEffect] search, tagFilter", search, tagFilter);
     fetchScenarios({ search, tagFilter });
   }, [search, tagFilter]);
 
@@ -96,15 +98,22 @@ export default function ScenarioPage() {
     tagFilter: string;
   }) => {
     setLoading(true);
-    let url = "/api/scenarios";
+    let url = apiUrl("/api/scenarios");
     const params = [];
     if (search) params.push(`search=${encodeURIComponent(search)}`);
     if (tagFilter) params.push(`tag=${encodeURIComponent(tagFilter)}`);
     if (params.length) url += `?${params.join("&")}`;
-    const res = await fetch(url);
-    let data = await res.json();
-    if (!Array.isArray(data)) data = [];
-    setScenarios(data);
+    console.log("[fetchScenarios] url:", url);
+    try {
+      const res = await fetch(url);
+      let data = await res.json();
+      console.log("[fetchScenarios] data from API:", data);
+      if (!Array.isArray(data)) data = [];
+      setScenarios(data);
+    } catch (err) {
+      console.error("[fetchScenarios] error:", err);
+      setScenarios([]);
+    }
     setLoading(false);
   };
 
@@ -134,14 +143,14 @@ export default function ScenarioPage() {
     try {
       let scenarioId = editingId;
       if (editingId) {
-        await fetch("/api/scenarios", {
+        await fetch(apiUrl("/api/scenarios"), {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...form, id: editingId }),
         });
         setToast("แก้ไข scenario สำเร็จ");
       } else {
-        const res = await fetch("/api/scenarios", {
+        const res = await fetch(apiUrl("/api/scenarios"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
@@ -184,7 +193,7 @@ export default function ScenarioPage() {
 
   const confirmDelete = async () => {
     if (!confirmModal.data) return;
-    await fetch("/api/scenarios", {
+    await fetch(apiUrl("/api/scenarios"), {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: confirmModal.data }),

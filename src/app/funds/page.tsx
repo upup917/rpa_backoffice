@@ -30,6 +30,7 @@ function formatDataForN8n(page: string, data: any) {
 }
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "../_lib/basePath";
 
 function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   useEffect(() => {
@@ -78,7 +79,7 @@ export default function FundsPage() {
 
   const fetchFunds = async (search = "") => {
     try {
-      const res = await fetch(`/api/funds?search=${encodeURIComponent(search)}`);
+      const res = await fetch(apiUrl(`/api/funds?search=${encodeURIComponent(search)}`));
       const data = await res.json();
       setFunds(Array.isArray(data) ? data : []);
       setFilteredFunds(Array.isArray(data) ? data : []);
@@ -118,7 +119,7 @@ export default function FundsPage() {
   const confirmSave = async () => {
     try {
       const method = editingId ? "PUT" : "POST";
-      const res = await fetch(`/api/funds`, {
+      const res = await fetch(apiUrl(`/api/funds`), {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -154,7 +155,7 @@ export default function FundsPage() {
 
   const confirmDelete = async () => {
     try {
-      const res = await fetch("/api/funds", {
+      const res = await fetch(apiUrl("/api/funds"), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fund_id: editingId, force: forceDelete }),

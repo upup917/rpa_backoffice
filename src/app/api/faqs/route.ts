@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 console.log('[FAQ API] route called');
 import pool from '../../api/_lib/db';

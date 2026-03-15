@@ -2,6 +2,7 @@
 
 import "./style.css";
 import { useEffect, useState } from "react";
+import { apiUrl } from "../_lib/basePath";
 
 function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function FAQPage() {
   const [toast, setToast] = useState<string>("");
 
   useEffect(() => {
-    fetch("/api/faqs")
+    fetch(apiUrl("/api/faqs"))
       .then((res) => res.json())
       .then((data) => Array.isArray(data) ? setFaqs(data) : setFaqs([]));
   }, []);
@@ -53,7 +54,7 @@ export default function FAQPage() {
 
   const confirmDelete = async () => {
     if (!modalData) return;
-    await fetch("/api/faqs", {
+    await fetch(apiUrl("/api/faqs"), {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: modalData }),
@@ -81,7 +82,7 @@ export default function FAQPage() {
     if (!modalData) return;
     let res;
     if (editingId) {
-      res = await fetch("/api/faqs", {
+      res = await fetch(apiUrl("/api/faqs"), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: editingId, ...modalData }),
@@ -102,7 +103,7 @@ export default function FAQPage() {
         setModalData(null);
         return;
       }
-      res = await fetch("/api/faqs", {
+      res = await fetch(apiUrl("/api/faqs"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(modalData),

@@ -1,6 +1,7 @@
 "use client";
 import "./style.css";
 import React, { useState, useEffect, useMemo } from "react";
+import { apiUrl } from "../_lib/basePath";
 
 type Session = {
   id: string;
@@ -54,7 +55,7 @@ export default function HistoryPage() {
   const MESSAGES_PER_PAGE = 10;
 
   useEffect(() => {
-    fetch("/api/chat-messages/users/list")
+    fetch(apiUrl("/api/chat-messages/users/list"))
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -71,14 +72,14 @@ export default function HistoryPage() {
     if (selectedUsers.length > 0) params.set("user_id", selectedUsers.join(","));
     if (feedbackFilterType) params.set("feedback", feedbackFilterType);
     if (dateFilterValue) params.set("date", dateFilterValue);
-    fetch(`/api/chat-sessions?${params.toString()}`)
+    fetch(apiUrl(`/api/chat-sessions?${params.toString()}`))
       .then((res) => res.json())
       .then((data) => setSessions(data))
       .finally(() => setLoading(false));
   }, [selectedUsers, feedbackFilterType, dateFilterValue, currentSessionPage]);
 
   useEffect(() => {
-    let url = "/api/chat-feedback";
+    let url = apiUrl("/api/chat-feedback");
     if (selectedUsers.length > 0) url += "?user_id=" + selectedUsers.join(",");
     fetch(url)
       .then((res) => res.json())
@@ -109,7 +110,7 @@ export default function HistoryPage() {
   useEffect(() => {
     if (!selectedSessionId) return;
     setChatLoading(true);
-    let url = `/api/history/sessions/${selectedSessionId}/messages`;
+    let url = apiUrl(`/api/history/sessions/${selectedSessionId}/messages`);
     if (dateFilterValue) url += `?date=${dateFilterValue}`;
     fetch(url)
       .then((res) => res.json())

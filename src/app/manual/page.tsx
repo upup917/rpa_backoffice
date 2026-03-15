@@ -43,6 +43,7 @@ function formatDataForN8n(page: string, data: any) {
 }
 
 import { useEffect, useState } from "react";
+import { apiUrl } from "../_lib/basePath";
 
 // --- Manual View Modal ---
 function ManualViewModal({
@@ -195,7 +196,7 @@ export default function ManualPage() {
 
   useEffect(() => {
     fetchManuals();
-    fetch("/api/funds")
+    fetch(apiUrl("/api/funds"))
       .then((res) => res.json())
       .then((data) => setFundList(data))
       .catch(() => {});
@@ -204,7 +205,7 @@ export default function ManualPage() {
   const fetchManuals = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/manuals");
+      const res = await fetch(apiUrl("/api/manuals"));
       const data = await res.json();
       if (Array.isArray(data)) {
         setManuals(data);
@@ -246,7 +247,7 @@ export default function ManualPage() {
   const confirmDeleteManual = async () => {
     if (!deleteId) return;
     try {
-      await fetch(`/api/manuals`, {
+      await fetch(apiUrl(`/api/manuals`), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chunk_id: deleteId }),
@@ -270,7 +271,7 @@ export default function ManualPage() {
     setLoading(true);
     try {
       const method = editingId ? "PUT" : "POST";
-      const res = await fetch("/api/manuals", {
+      const res = await fetch(apiUrl("/api/manuals"), {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editingId ? { ...form, chunk_id: editingId } : form),

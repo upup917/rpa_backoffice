@@ -16,6 +16,7 @@ function escapeHtml(text: unknown): string {
 
 import "./style.css";
 import { useEffect, useState } from "react";
+import { apiUrl } from "../_lib/basePath";
 
 // Helper to get value or fallback
 function getValue(val: any, fallback: string = "-") {
@@ -79,7 +80,7 @@ export default function TermsPage() {
 	async function fetchTerms() {
 		setLoading(true);
 		try {
-			const res = await fetch(`/api/terms?search=${encodeURIComponent(search)}`);
+			const res = await fetch(apiUrl(`/api/terms?search=${encodeURIComponent(search)}`));
 			const data = await res.json();
 			setTerms(data.terms || []);
 			setTypes(data.types || []);
@@ -116,13 +117,13 @@ export default function TermsPage() {
 			let wordIdToSend = editingId;
 
 			if (editingId) {
-				await fetch("/api/terms", {
+				await fetch(apiUrl("/api/terms"), {
 					method: "PUT",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify({ ...form, word_id: editingId }),
 				});
 			} else {
-				const res = await fetch("/api/terms", {
+				const res = await fetch(apiUrl("/api/terms"), {
 					method: "POST",
 					headers: { "Content-Type": "application/json" },
 					body: JSON.stringify(form),
@@ -164,7 +165,7 @@ export default function TermsPage() {
 
 	const confirmDelete = async () => {
 		if (!confirmModal.data) return;
-		await fetch("/api/terms", {
+		await fetch(apiUrl("/api/terms"), {
 			method: "DELETE",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({ word_id: confirmModal.data }),

@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 console.log('[History Session Messages API] route called');
 import { NextResponse, NextRequest } from 'next/server';
