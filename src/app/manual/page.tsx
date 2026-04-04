@@ -196,16 +196,23 @@ export default function ManualPage() {
 
   useEffect(() => {
     fetchManuals();
-    fetch(apiUrl("/api/funds"))
-      .then((res) => res.json())
-      .then((data) => setFundList(data))
-      .catch(() => {});
+    (async () => {
+      try {
+        const res = await fetch(apiUrl("/api/funds"));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setFundList(Array.isArray(data) ? data : []);
+      } catch {
+        setFundList([]);
+      }
+    })();
   }, []);
 
   const fetchManuals = async () => {
     setLoading(true);
     try {
       const res = await fetch(apiUrl("/api/manuals"));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setManuals(data);
@@ -247,11 +254,12 @@ export default function ManualPage() {
   const confirmDeleteManual = async () => {
     if (!deleteId) return;
     try {
-      await fetch(apiUrl(`/api/manuals`), {
+      const res = await fetch(apiUrl(`/api/manuals`), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chunk_id: deleteId }),
       });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setToast("ลบคู่มือสำเร็จ");
       fetchManuals();
     } catch {

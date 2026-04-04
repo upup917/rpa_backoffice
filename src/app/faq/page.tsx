@@ -29,9 +29,17 @@ export default function FAQPage() {
   const [toast, setToast] = useState<string>("");
 
   useEffect(() => {
-    fetch(apiUrl("/api/faqs"))
-      .then((res) => res.json())
-      .then((data) => Array.isArray(data) ? setFaqs(data) : setFaqs([]));
+    (async () => {
+      try {
+        const res = await fetch(apiUrl("/api/faqs"));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setFaqs(Array.isArray(data) ? data : []);
+      } catch {
+        setFaqs([]);
+        setToast("à¸”à¸¶à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ FAQ à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
+      }
+    })();
   }, []);
 
   const handleAddClick = () => {

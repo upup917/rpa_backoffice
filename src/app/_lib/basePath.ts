@@ -18,7 +18,15 @@ function normalizeBasePath(raw: string | undefined): string {
   return bp;
 }
 
-export const BASE_PATH = normalizeBasePath(process.env.NEXT_PUBLIC_BASE_PATH);
+// If you don't want to manage `.env`, you can hardcode a default here.
+// Env var (if provided) still takes precedence.
+const DEFAULT_BASE_PATH = '/beta/YAQ97hlxZp87';
+
+const rawBasePath =
+  process.env.NEXT_PUBLIC_BASE_PATH ??
+  (process.env.NODE_ENV === 'production' ? DEFAULT_BASE_PATH : '');
+
+export const BASE_PATH = normalizeBasePath(rawBasePath);
 
 export function withBasePath(path: string): string {
   // Leave absolute URLs untouched.
@@ -38,4 +46,3 @@ export function withBasePath(path: string): string {
 export function apiUrl(path: string): string {
   return withBasePath(path);
 }
-

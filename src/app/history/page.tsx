@@ -55,15 +55,20 @@ export default function HistoryPage() {
   const MESSAGES_PER_PAGE = 10;
 
   useEffect(() => {
-    fetch(apiUrl("/api/chat-messages/users/list"))
-      .then((res) => res.json())
-      .then((data) => {
+    (async () => {
+      try {
+        const res = await fetch(apiUrl("/api/chat-messages/users/list"));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
         if (Array.isArray(data)) {
           setUsers(data.map((item: any) => item.user_id).filter(Boolean));
         } else {
           setUsers([]);
         }
-      });
+      } catch {
+        setUsers([]);
+      }
+    })();
   }, []);
 
   useEffect(() => {
@@ -72,18 +77,33 @@ export default function HistoryPage() {
     if (selectedUsers.length > 0) params.set("user_id", selectedUsers.join(","));
     if (feedbackFilterType) params.set("feedback", feedbackFilterType);
     if (dateFilterValue) params.set("date", dateFilterValue);
-    fetch(apiUrl(`/api/chat-sessions?${params.toString()}`))
-      .then((res) => res.json())
-      .then((data) => setSessions(data))
-      .finally(() => setLoading(false));
+    (async () => {
+      try {
+        const res = await fetch(apiUrl(`/api/chat-sessions?${params.toString()}`));
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setSessions(data);
+      } catch {
+        setSessions([]);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [selectedUsers, feedbackFilterType, dateFilterValue, currentSessionPage]);
 
   useEffect(() => {
     let url = apiUrl("/api/chat-feedback");
     if (selectedUsers.length > 0) url += "?user_id=" + selectedUsers.join(",");
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => setFeedbackStats(data));
+    (async () => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setFeedbackStats(data);
+      } catch {
+        setFeedbackStats({ like_count: 0, dislike_count: 0, neutral_count: 0 });
+      }
+    })();
   }, [selectedUsers]);
 
   const totalSessionPages = Array.isArray(sessions) ? Math.ceil(sessions.length / SESSIONS_PER_PAGE) || 1 : 1;
@@ -112,10 +132,18 @@ export default function HistoryPage() {
     setChatLoading(true);
     let url = apiUrl(`/api/history/sessions/${selectedSessionId}/messages`);
     if (dateFilterValue) url += `?date=${dateFilterValue}`;
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => setMessages(data))
-      .finally(() => setChatLoading(false));
+    (async () => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setMessages(data);
+      } catch {
+        setMessages([]);
+      } finally {
+        setChatLoading(false);
+      }
+    })();
   }, [selectedSessionId, dateFilterValue]);
 
   const like = typeof feedbackStats.like_count === "string" ? parseInt(feedbackStats.like_count) : feedbackStats.like_count || 0;

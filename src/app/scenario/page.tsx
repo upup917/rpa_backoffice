@@ -106,6 +106,7 @@ export default function ScenarioPage() {
     console.log("[fetchScenarios] url:", url);
     try {
       const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       let data = await res.json();
       console.log("[fetchScenarios] data from API:", data);
       if (!Array.isArray(data)) data = [];
@@ -113,6 +114,7 @@ export default function ScenarioPage() {
     } catch (err) {
       console.error("[fetchScenarios] error:", err);
       setScenarios([]);
+      setToast("à¸”à¸¶à¸‡à¸‚à¹‰à¸­à¸¡à¸¹à¸¥ scenario à¹„à¸¡à¹ˆà¸ªà¸³à¹€à¸£à¹‡à¸ˆ");
     }
     setLoading(false);
   };

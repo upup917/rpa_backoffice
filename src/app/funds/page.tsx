@@ -80,6 +80,7 @@ export default function FundsPage() {
   const fetchFunds = async (search = "") => {
     try {
       const res = await fetch(apiUrl(`/api/funds?search=${encodeURIComponent(search)}`));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setFunds(Array.isArray(data) ? data : []);
       setFilteredFunds(Array.isArray(data) ? data : []);

@@ -81,11 +81,13 @@ export default function TermsPage() {
 		setLoading(true);
 		try {
 			const res = await fetch(apiUrl(`/api/terms?search=${encodeURIComponent(search)}`));
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const data = await res.json();
 			setTerms(data.terms || []);
 			setTypes(data.types || []);
 		} catch {
 			setTerms([]);
+			setTypes([]);
 		} finally {
 			setLoading(false);
 		}

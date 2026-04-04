@@ -40,5 +40,9 @@ USER nextjs
 
 EXPOSE 3000
 
+# Container health = app is up AND DB reachable.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "require('http').get('http://127.0.0.1:3000/api/health', r => { r.resume(); process.exit(r.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));"
+
 # ปรับ CMD เพื่อให้มั่นใจว่า Environment ถูกโหลดก่อนเริ่มงาน
 CMD ["npm", "start"]
